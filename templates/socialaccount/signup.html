@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Signup" %} - FlowDesk{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2 class="auth-title">{% trans "Social Signup" %}</h2>
+        <p class="auth-subtitle">{% blocktrans with provider_name=account.get_provider.name %}You are signing up with your {{ provider_name }} account. Please choose a username.{% endblocktrans %}</p>
+
+        <form class="signup auth-form" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {{ field.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            <button type="submit" class="btn btn-primary btn-block">{% trans "Sign Up" %} &raquo;</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
