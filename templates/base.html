@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Support Ticketing System{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'tickets/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="main-header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Flow<span class="logo-accent">Desk</span></span>
+            </div>
+            <nav class="nav-links">
+                {% if user.is_authenticated %}
+                    <span class="user-greeting">Welcome, <strong>{{ user.username }}</strong> {% if user.is_staff %}(Agent){% endif %}</span>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Dashboard</a>
+                    {% if not user.is_staff %}
+                        <a href="{% url 'ticket_create' %}" class="btn btn-primary">New Ticket</a>
+                    {% endif %}
+                    <form action="{% url 'logout' %}" method="post" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+                    <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Chatbot Widget (Only for authenticated users) -->
+    {% if user.is_authenticated %}
+    <div class="chatbot-widget" id="chatbotWidget">
+        <button class="chatbot-toggle" id="chatbotToggle" aria-label="Open support chat">
+            <span class="chat-icon">💬</span>
+            <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
+        </button>
+        <div class="chatbot-panel" id="chatbotPanel">
+            <div class="chatbot-header">
+                <div class="bot-info">
+                    <span class="bot-avatar">🤖</span>
+                    <div class="bot-details">
+                        <h4>FlowBot</h4>
+                        <span class="bot-status">Online Assistant</span>
+                    </div>
+                </div>
+                <button class="chatbot-close" id="chatbotClose" aria-label="Close support chat">&times;</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hi {{ user.username }}! I am FlowBot, your automated assistant. How can I help you today?
+                    <div class="chatbot-suggestions">
+                        <button class="suggestion-btn" onclick="sendSuggestion('Create a ticket')">Create a Ticket</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('List my tickets')">List My Tickets</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('Check status of ticket #')">Check Status</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Type a message..." autocomplete="off">
+                <button id="chatbotSendBtn" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Chatbot Javascript -->
+    {% if user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('chatbotToggle');
+            const panel = document.getElementById('chatbotPanel');
+            const closeBtn = document.getElementById('chatbotClose');
+            const input = document.getElementById('chatbotInput');
+            const sendBtn = document.getElementById('chatbotSendBtn');
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const badge = document.getElementById('chatBadge');
+
+            // Open/Close chat panel
+            toggle.addEventListener('click', () => {
+                panel.classList.toggle('active');
+                badge.style.display = 'none';
+                if(panel.classList.contains('active')) {
+                    input.focus();
+                }
+            });
+
+            closeBtn.addEventListener('click', () => {
+                panel.classList.remove('active');
+            });
+
+            // Send message logic
+            function sendMessage() {
+                const text = input.value.trim();
+                if (!text) return;
+
+                // Append user message to panel
+                appendMessage(text, 'user-message');
+                input.value = '';
+
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Send request to API
+                fetch('{% url "chatbot_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ message: text })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.reply) {
+                        appendMessage(data.reply, 'bot-message');
+                    } else if (data.error) {
+                        appendMessage('Sorry, there was an error processing your request.', 'bot-message');
+                    }
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    appendMessage('Network error. Please try again.', 'bot-message');
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                });
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            window.sendSuggestion = function(text) {
+                input.value = text;
+                input.focus();
+            };
+
+            function appendMessage(text, className) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${className}`;
+                
+                // Allow markdown bold format (**text**) and linebreaks (\n)
+                let formattedText = text
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
+
+                msgDiv.innerHTML = formattedText;
+                messagesContainer.appendChild(msgDiv);
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

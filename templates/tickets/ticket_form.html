@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Ticket - FlowDesk{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Submit a New Ticket</h2>
+            <p>Describe your technical problem or request, and our support team will respond shortly.</p>
+        </div>
+        <form method="post" class="ticket-submit-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {{ field.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - FlowDesk{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if user.is_staff %}
+        <!-- Stats cards for Admins/Agents -->
+        <h2 class="section-title">Agent Console Overview</h2>
+        <div class="stats-grid">
+            <div class="stat-card total-tickets">
+                <span class="stat-icon">📋</span>
+                <div class="stat-info">
+                    <h3>Total Tickets</h3>
+                    <p class="stat-number">{{ stats.total }}</p>
+                </div>
+            </div>
+            <div class="stat-card open-tickets">
+                <span class="stat-icon font-open">🔓</span>
+                <div class="stat-info">
+                    <h3>Open</h3>
+                    <p class="stat-number">{{ stats.open }}</p>
+                </div>
+            </div>
+            <div class="stat-card pending-tickets">
+                <span class="stat-icon font-pending">⏳</span>
+                <div class="stat-info">
+                    <h3>Pending</h3>
+                    <p class="stat-number">{{ stats.pending }}</p>
+                </div>
+            </div>
+            <div class="stat-card on-hold-tickets">
+                <span class="stat-icon font-hold">⏸️</span>
+                <div class="stat-info">
+                    <h3>On Hold</h3>
+                    <p class="stat-number">{{ stats.on_hold }}</p>
+                </div>
+            </div>
+            <div class="stat-card solved-tickets">
+                <span class="stat-icon font-solved">✅</span>
+                <div class="stat-info">
+                    <h3>Solved</h3>
+                    <p class="stat-number">{{ stats.solved }}</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="dashboard-header-simple">
+            <h2 class="section-title">My Support Tickets</h2>
+            <a href="{% url 'ticket_create' %}" class="btn btn-primary">Create a Ticket</a>
+        </div>
+    {% endif %}
+
+    <!-- Filter and Search Area -->
+    <div class="filter-search-container">
+        <form method="get" class="filter-form">
+            <div class="filter-inputs">
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="on_hold" {% if status_filter == 'on_hold' %}selected{% endif %}>On Hold</option>
+                        <option value="solved" {% if status_filter == 'solved' %}selected{% endif %}>Solved</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="priority">Priority</label>
+                    <select name="priority" id="priority" onchange="this.form.submit()">
+                        <option value="">All Priorities</option>
+                        <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="search-group">
+                <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Search tickets...">
+                <button type="submit" class="btn btn-secondary">Search</button>
+                {% if status_filter or priority_filter or search_query %}
+                    <a href="{% url 'dashboard' %}" class="clear-filters">Clear All</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Ticket Table/List -->
+    <div class="table-container">
+        {% if tickets %}
+            <table class="tickets-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Created By</th>
+                        <th>Assigned Agent</th>
+                        <th>Created At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr class="ticket-row">
+                            <td class="ticket-id">#{{ ticket.id }}</td>
+                            <td class="ticket-title">
+                                <a href="{% url 'ticket_detail' ticket.id %}">
+                                    <strong>{{ ticket.title }}</strong>
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge status-badge status-{{ ticket.status }}">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge priority-badge priority-{{ ticket.priority }}">
+                                    {{ ticket.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.created_by.username }}</td>
+                            <td>
+                                {% if ticket.assigned_to %}
+                                    <span class="assignee">{{ ticket.assigned_to.username }}</span>
+                                {% else %}
+                                    <span class="unassigned">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td class="ticket-date">{{ ticket.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'ticket_detail' ticket.id %}" class="btn btn-small btn-secondary">View</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">📂</span>
+                <p>No tickets found matching the criteria.</p>
+                {% if not user.is_staff %}
+                    <a href="{% url 'ticket_create' %}" class="btn btn-primary">Submit a New Ticket</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

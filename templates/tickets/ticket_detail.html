@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket #{{ ticket.id }}: {{ ticket.title }} - FlowDesk{% endblock %}
+
+{% block content %}
+<div class="ticket-detail-container">
+    <!-- Back Link -->
+    <div class="back-link-container">
+        <a href="{% url 'dashboard' %}" class="back-link">&larr; Back to Dashboard</a>
+    </div>
+
+    <!-- Ticket Grid (Left: Description & Discussion, Right: Control panel / Status metadata) -->
+    <div class="ticket-grid">
+        <!-- Main Column -->
+        <div class="main-column">
+            <!-- Ticket Info Card -->
+            <div class="detail-card ticket-info-card">
+                <div class="ticket-info-header">
+                    <span class="detail-ticket-id">Ticket #{{ ticket.id }}</span>
+                    <h2 class="detail-ticket-title">{{ ticket.title }}</h2>
+                </div>
+                <div class="ticket-info-body">
+                    <p class="description-text">{{ ticket.description|linebreaksbr }}</p>
+                </div>
+                <div class="ticket-info-footer">
+                    <span>Reported by: <strong>{{ ticket.created_by.username }}</strong></span>
+                    <span>Date Filed: {{ ticket.created_at|date:"F d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Notes/Comments Section -->
+            <div class="detail-card discussion-card">
+                <h3>Conversation & Notes</h3>
+                
+                <div class="notes-list">
+                    {% if notes %}
+                        {% for note in notes %}
+                            <div class="note-item {% if note.is_internal %}note-internal{% else %}note-public{% endif %}">
+                                <div class="note-header">
+                                    <div class="note-meta">
+                                        <span class="note-author">{{ note.author.username }}</span>
+                                        {% if note.is_internal %}
+                                            <span class="badge badge-internal">Internal Note</span>
+                                        {% else %}
+                                            <span class="badge badge-public">Public Reply</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="note-date">{{ note.created_at|date:"M d, Y H:i" }}</span>
+                                </div>
+                                <div class="note-body">
+                                    <p>{{ note.content|linebreaksbr }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-notes">No replies or internal notes on this ticket yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Add Note Form -->
+                <div class="add-note-container">
+                    <h4>Add a Reply</h4>
+                    <form method="post" class="note-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ note_form.content }}
+                        </div>
+                        {% if user.is_staff %}
+                            <div class="form-group-checkbox">
+                                {{ note_form.is_internal }}
+                                <label for="{{ note_form.is_internal.id_for_label }}">Mark as Internal Note (Staff only)</label>
+                            </div>
+                        {% endif %}
+                        <button type="submit" name="submit_note" class="btn btn-primary">Post Reply</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Panel (Control panel / Status updates) -->
+        <div class="sidebar-column">
+            <!-- Metadata Card -->
+            <div class="detail-card sidebar-card metadata-card">
+                <h3>Ticket Properties</h3>
+                <div class="metadata-rows">
+                    <div class="metadata-row">
+                        <span class="label">Status:</span>
+                        <span class="value">
+                            <span class="badge status-badge status-{{ ticket.status }}">
+                                {{ ticket.get_status_display }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="label">Priority:</span>
+                        <span class="value">
+                            <span class="badge priority-badge priority-{{ ticket.priority }}">
+                                {{ ticket.get_priority_display }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="label">Assigned Agent:</span>
+                        <span class="value">
+                            {% if ticket.assigned_to %}
+                                <strong>{{ ticket.assigned_to.username }}</strong>
+                            {% else %}
+                                <span class="unassigned">Unassigned</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Edit Actions Form -->
+            {% if user.is_staff %}
+                <div class="detail-card sidebar-card control-card">
+                    <h3>Update Ticket Properties</h3>
+                    <form method="post" class="update-properties-form">
+                        {% csrf_token %}
+                        {% for field in update_form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" name="submit_update" class="btn btn-primary btn-block">Update Properties</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- History log -->
+            <div class="detail-card sidebar-card history-card">
+                <h3>Activity History</h3>
+                <div class="history-timeline">
+                    {% if history %}
+                        {% for event in history %}
+                            <div class="history-item">
+                                <span class="history-dot"></span>
+                                <div class="history-content">
+                                    <p class="history-desc">{{ event.change_summary }}</p>
+                                    <span class="history-meta">By {{ event.changed_by.username|default:"System" }} &bull; {{ event.created_at|date:"M d, H:i" }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-history">No activity logged.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

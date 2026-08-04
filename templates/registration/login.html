@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - FlowDesk{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2 class="auth-title">Log In</h2>
+        <p class="auth-subtitle">Access your support portal</p>
+        
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {{ field.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-block">Log In</button>
+        </form>
+        
+        <div class="auth-footer">
+            Don't have an account? <a href="{% url 'signup' %}">Sign Up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
