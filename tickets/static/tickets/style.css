@@ -994,3 +994,43 @@ body {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
 }
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin: 1.25rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.auth-divider:not(:empty)::before {
+    margin-right: .5em;
+}
+
+.auth-divider:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.google-login-btn {
+    background-color: var(--white) !important;
+    color: var(--dark) !important;
+    border: 1px solid var(--gray-light) !important;
+    box-shadow: var(--shadow);
+}
+
+.google-login-btn:hover {
+    background-color: var(--gray-lighter) !important;
+}
+
+.social-icon {
+    margin-right: 0.5rem;
+}
+

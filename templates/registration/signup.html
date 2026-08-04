@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 
 {% block title %}Sign Up - FlowDesk{% endblock %}
 
@@ -26,6 +27,11 @@
             {% endfor %}
             <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
         </form>
+
+        <div class="auth-divider"><span>or</span></div>
+        <a href="{% provider_login_url 'google' %}" class="btn btn-secondary btn-block google-login-btn">
+            <span class="social-icon">🔑</span> Sign Up with Google
+        </a>
         
         <div class="auth-footer">
             Already have an account? <a href="{% url 'login' %}">Log In</a>

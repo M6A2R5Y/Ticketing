@@ -68,7 +68,13 @@ python manage.py runserver
 ```
 Visit the application in your browser at `http://127.0.0.1:8000/`.
 
+### 6. Environment Variable Configuration (SSO & Gemini AI)
+To enable Google SSO login and the live AI chatbot, set the following environment variables:
+- **`GEMINI_API_KEY`**: Obtain from the Google AI Studio console. Activates live AI responses. If omitted, FlowBot defaults to sandbox rule-based mode.
+- **`GOOGLE_CLIENT_ID`** & **`GOOGLE_CLIENT_SECRET`**: Generate these by creating a web client in the Google Developer Console. Add `http://127.0.0.1:8000/accounts/google/login/callback/` to your Authorized Redirect URIs.
+
 ---
+
 
 ## Using the Chatbot (FlowBot)
 
