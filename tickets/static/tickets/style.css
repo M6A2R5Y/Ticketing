@@ -5,9 +5,9 @@
 */
 
 :root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --primary-light: #e0e7ff;
+    --primary: #5d5fef;       /* Iris 100 */
+    --primary-hover: #7879f1; /* Iris 80 */
+    --primary-light: #e4e4fd; /* Iris tint */
     
     --success: #10b981;
     --success-light: #d1fae5;
@@ -21,7 +21,15 @@
     --info: #06b6d4;
     --info-light: #ecfeff;
     
-    --dark: #0f172a;
+    /* Design tokens from light-dark-export (Figma) */
+    --iris-100: #5d5fef;
+    --iris-80: #7879f1;
+    --iris-60: #a5a6f6;
+    --fuschia-100: #ef5da8;
+    --fuschia-80: #f178b6;
+    --fuschia-60: #fcddec;
+    
+    --dark: #0e0e2c;
     --gray-dark: #334155;
     --gray: #64748b;
     --gray-light: #cbd5e1;
@@ -48,7 +56,7 @@
 
 body {
     font-family: var(--font);
-    background-color: #f1f5f9;
+    background-color: #fafafa;
     color: var(--dark);
     line-height: 1.5;
     min-height: 100vh;
@@ -280,7 +288,7 @@ body {
 .form-control:focus, input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.18);
 }
 
 .form-help-text {
