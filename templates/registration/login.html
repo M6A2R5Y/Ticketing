@@ -29,6 +29,9 @@
         <a href="{% provider_login_url 'google' %}" class="btn btn-secondary btn-block google-login-btn">
             <span class="social-icon">🔑</span> Log In with Google
         </a>
+        <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; line-height: 1.4;">
+            <em>Note: Google SSO requires GOOGLE_CLIENT_ID & SECRET on Render. You can also sign up or log in above directly.</em>
+        </p>
         
         <div class="auth-footer">
             Don't have an account? <a href="{% url 'signup' %}">Sign Up</a>

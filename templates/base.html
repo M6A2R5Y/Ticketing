@@ -7,8 +7,18 @@
     <title>{% block title %}Support Ticketing System{% endblock %}</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'tickets/style.css' %}">
+    <link rel="stylesheet" href="{% static 'tickets/style.css' %}?v=3">
     {% block extra_css %}{% endblock %}
+    <!-- Prevent theme flash script -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('flowdesk-theme');
+            if (!theme) {
+                theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -33,6 +43,10 @@
                     <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
                     <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
                 {% endif %}
+                <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light and Dark Mode" title="Toggle Theme">
+                    <span class="theme-icon-light">☀️</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
             </nav>
         </header>
 
@@ -194,5 +208,19 @@
         });
     </script>
     {% endif %}
+    <!-- Global Theme Switcher Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var themeBtn = document.getElementById('themeToggleBtn');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', function() {
+                    var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('flowdesk-theme', next);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
